@@ -602,4 +602,25 @@ async function saveDate() {
       closeModal();
       showToast('✓ Date saved to Google Sheets!');
     } else {
-      showToast('Error: ' + (result.ms
+      showToast('Error: ' + (result.msg || 'Could not save'));
+    }
+  } catch(e) {
+    showToast('Connection error — try again');
+  } finally {
+    saveBtn.textContent = 'Save Date';
+    saveBtn.disabled = false;
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Init
+loadData();
+</script>
+</body>
+</html>
