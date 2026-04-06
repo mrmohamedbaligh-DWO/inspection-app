@@ -567,48 +567,39 @@ document.getElementById('edit-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('edit-modal')) closeModal();
 });
 
-function saveDate() {
+async function saveDate() {
   const newDate = document.getElementById('modal-date-input').value;
   if (!newDate) { showToast('Please select a date'); return; }
 
-  // Update locally
   const item = currentEditItem;
-  const [y,m,d] = newDate.split('-').map(Number);
-  const newDateVal = `Date(${y},${m-1},${d})`;
+  const saveBtn = document.querySelector('.btn-save');
+  saveBtn.textContent = 'Saving...';
+  saveBtn.disabled = true;
 
-  // Find and update in allData
-  allData.forEach(r => {
-    if (r.unit === item.unit && r.equipment === item.equipment &&
-        r.inspType === item.inspType && r.serial === item.serial) {
-      r.expiry = newDateVal;
-    }
-  });
+  try {
+    const params = new URLSearchParams({
+      action: 'update',
+      unit: item.unit,
+      equipment: item.equipment,
+      inspType: item.inspType,
+      newDate: newDate
+    });
 
-  updateKPIs();
+    const res = await fetch(API_URL + '?' + params.toString());
+    const result = await res.json();
 
-  // Re-render current search
-  const q = document.getElementById('search-input').value.trim().toLowerCase();
-  const filtered = q ? allData.filter(r => r.unit.toLowerCase().includes(q)) : allData;
-  renderResults(filtered);
-
-  closeModal();
-  showToast('Date updated successfully ✓');
-
-  // Show instructions to update Google Sheet
-  setTimeout(() => {
-    showToast(`Update row ${item.rowIndex} in Google Sheet`);
-  }, 2500);
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// Init
-loadData();
-</script>
-</body>
-</html>
+    if (result.status === 'ok') {
+      allData.forEach(r => {
+        if (r.unit === item.unit && r.equipment === item.equipment &&
+            r.inspType === item.inspType && r.serial === item.serial) {
+          r.expiry = newDate;
+        }
+      });
+      updateKPIs();
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      const filtered = q ? allData.filter(r => r.unit.toLowerCase().includes(q)) : allData;
+      renderResults(filtered);
+      closeModal();
+      showToast('✓ Date saved to Google Sheets!');
+    } else {
+      showToast('Error: ' + (result.ms
