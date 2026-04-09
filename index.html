@@ -1,400 +1,279 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Equipment Inspection</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   :root {
-    --navy: #1F3864;
-    --navy-light: #2E4F8A;
-    --blue-light: #EBF2FF;
-    --red: #C00000;
-    --red-light: #FFEBEB;
-    --orange: #ED7D31;
-    --orange-light: #FFF3EB;
-    --yellow: #FFC000;
-    --yellow-light: #FFFBEB;
-    --green: #00B050;
-    --green-light: #EAFAF0;
-    --gray: #595959;
-    --gray-light: #F5F5F5;
-    --border: #E8E8E8;
-    --text: #1a1a1a;
-    --text-muted: #777;
-    --white: #fff;
-    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --navy: #1F3864; --blue: #2E75B6; --blue-light: #EBF2FF;
+    --red: #C00000; --red-light: #FFEBEB;
+    --orange: #ED7D31; --orange-light: #FFF3EB;
+    --yellow: #FFC000; --yellow-light: #FFFBEB;
+    --green: #00B050; --green-light: #EAFAF0;
+    --gray: #595959; --gray-light: #F5F5F5;
+    --border: #EBEBEB; --text: #1a1a1a; --muted: #888;
   }
-
-  body {
-    font-family: var(--font);
-    background: #F0F4F8;
-    color: var(--text);
-    min-height: 100vh;
-    max-width: 480px;
-    margin: 0 auto;
-  }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F0F4F8; color: var(--text); max-width: 480px; margin: 0 auto; min-height: 100vh; }
 
   /* Header */
-  .header {
-    background: var(--navy);
-    padding: 20px 16px 16px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-  }
-  .header-title { color: #fff; font-size: 18px; font-weight: 600; }
-  .header-date { color: #BDD7EE; font-size: 12px; }
-  .header-badge {
-    background: var(--red);
-    color: #fff;
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-weight: 500;
-  }
+  .header { background: var(--navy); padding: 16px 16px 0; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .header-title { color: #fff; font-size: 17px; font-weight: 600; }
+  .header-date { color: #BDD7EE; font-size: 11px; margin-top: 2px; }
 
-  /* Search */
-  .search-box {
-    display: flex;
-    gap: 8px;
+  /* Tabs */
+  .tabs { display: flex; }
+  .tab {
+    padding: 10px 14px; font-size: 12px; color: rgba(255,255,255,0.45);
+    cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
   }
+  .tab.active { color: #fff; font-weight: 600; border-bottom-color: #fff; }
+
+  /* Content */
+  .tab-content { display: none; padding-bottom: 24px; }
+  .tab-content.active { display: block; }
+
+  /* KPI */
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+  .kpi-card {
+    background: #fff; border-radius: 12px; padding: 12px;
+    border-left: 3px solid transparent; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .kpi-card:active { transform: scale(0.97); }
+  .kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .kpi-value { font-size: 28px; font-weight: 700; line-height: 1; margin-bottom: 2px; }
+  .kpi-tap { font-size: 10px; color: #bbb; }
+  .kpi-expired { border-color: var(--red); } .kpi-expired .kpi-value { color: var(--red); }
+  .kpi-expiring { border-color: var(--orange); } .kpi-expiring .kpi-value { color: var(--orange); }
+  .kpi-valid { border-color: var(--green); } .kpi-valid .kpi-value { color: var(--green); }
+  .kpi-active { border-color: var(--navy); } .kpi-active .kpi-value { color: var(--navy); }
+
+  /* Search box */
+  .search-section { padding: 12px 12px 0; }
+  .search-box { background: #fff; border-radius: 12px; padding: 12px; }
+  .search-label { font-size: 11px; color: var(--muted); font-weight: 500; margin-bottom: 7px; }
+  .search-row { display: flex; gap: 7px; }
   .search-input {
-    flex: 1;
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 10px;
-    padding: 10px 14px;
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-    font-family: var(--font);
+    flex: 1; background: var(--blue-light); border: none; border-radius: 9px;
+    padding: 9px 12px; font-size: 13px; color: var(--navy); font-weight: 500;
+    outline: none; font-family: inherit;
   }
-  .search-input::placeholder { color: rgba(255,255,255,0.5); }
-  .search-input:focus { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.4); }
+  .search-input::placeholder { color: #aac4e8; font-weight: 400; }
   .search-btn {
-    background: #fff;
-    color: var(--navy);
-    border: none;
-    border-radius: 10px;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: var(--font);
-    white-space: nowrap;
+    background: var(--navy); color: #fff; border: none; border-radius: 9px;
+    padding: 9px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
   }
   .search-btn:active { opacity: 0.85; }
   .clear-btn {
-    background: rgba(255,255,255,0.15);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: var(--font);
+    background: var(--gray-light); color: var(--muted); border: none; border-radius: 9px;
+    padding: 9px 10px; font-size: 12px; cursor: pointer; font-family: inherit;
   }
 
-  /* KPI Cards */
-  .kpi-section { padding: 14px 12px 0; }
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .kpi-card {
-    background: var(--white);
-    border-radius: 12px;
-    padding: 12px;
-    border-left: 3px solid transparent;
-  }
-  .kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
-  .kpi-value { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 2px; }
-  .kpi-sub { font-size: 10px; color: var(--text-muted); }
-  .kpi-expired { border-color: var(--red); }
-  .kpi-expired .kpi-value { color: var(--red); }
-  .kpi-expiring { border-color: var(--orange); }
-  .kpi-expiring .kpi-value { color: var(--orange); }
-  .kpi-valid { border-color: var(--green); }
-  .kpi-valid .kpi-value { color: var(--green); }
-  .kpi-active { border-color: var(--navy); }
-  .kpi-active .kpi-value { color: var(--navy); }
-
-  /* Section title */
-  .section-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 14px 12px 8px;
+  /* Results list */
+  .results-area { padding: 10px 12px 0; }
+  .section-label {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
   }
 
-  /* Unit card */
-  .unit-card {
-    background: var(--white);
-    border-radius: 14px;
-    margin: 0 12px 10px;
-    overflow: hidden;
-    border: 1px solid var(--border);
+  /* Result card */
+  .result-card { background: #fff; border-radius: 12px; overflow: hidden; margin-bottom: 10px; border: 1px solid var(--border); }
+  .result-card-header {
+    padding: 9px 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
   }
-  .unit-header {
-    background: var(--navy);
-    padding: 10px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .unit-name { color: #fff; font-size: 14px; font-weight: 600; }
-  .unit-category { color: #BDD7EE; font-size: 11px; margin-top: 1px; }
-  .unit-status-badge {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 8px;
-    font-weight: 600;
-  }
+  .result-card-header:active { opacity: 0.85; }
+  .rch-name { font-size: 13px; font-weight: 600; color: #fff; }
+  .rch-sub { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 1px; }
+  .rch-badge { font-size: 10px; padding: 3px 8px; border-radius: 8px; font-weight: 600; white-space: nowrap; }
 
   /* Equipment row */
   .equip-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-    transition: background 0.15s;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 12px; border-bottom: 1px solid var(--border); cursor: pointer;
   }
   .equip-row:last-child { border-bottom: none; }
   .equip-row:active { background: var(--gray-light); }
-  .equip-name { font-size: 13px; font-weight: 500; color: var(--text); }
-  .equip-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-  .equip-right { text-align: right; flex-shrink: 0; margin-left: 10px; }
-  .equip-date { font-size: 11px; font-weight: 500; margin-bottom: 4px; }
-  .status-pill {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 8px;
-  }
-  .status-expired { background: var(--red-light); color: var(--red); }
-  .status-expiring { background: var(--orange-light); color: var(--orange); }
-  .status-watch { background: var(--yellow-light); color: #b38600; }
-  .status-valid { background: var(--green-light); color: var(--green); }
+  .eq-name { font-size: 12px; font-weight: 500; }
+  .eq-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .eq-right { text-align: right; flex-shrink: 0; margin-left: 8px; }
+  .eq-date { font-size: 10px; font-weight: 500; margin-bottom: 3px; }
+  .pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 7px; }
+  .pill-expired { background: var(--red-light); color: var(--red); }
+  .pill-expiring { background: var(--orange-light); color: var(--orange); }
+  .pill-watch { background: var(--yellow-light); color: #7a5800; }
+  .pill-valid { background: var(--green-light); color: var(--green); }
 
   /* Edit modal */
   .modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: flex-end;
-    z-index: 200;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
+    position: fixed; top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5); display: flex; align-items: flex-end;
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .modal-overlay.active { opacity: 1; pointer-events: all; }
   .modal {
-    background: var(--white);
-    border-radius: 20px 20px 0 0;
-    padding: 20px;
-    width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    transform: translateY(100%);
-    transition: transform 0.25s ease;
+    background: #fff; border-radius: 20px 20px 0 0; padding: 20px;
+    width: 100%; max-width: 480px; margin: 0 auto;
+    transform: translateY(100%); transition: transform 0.25s ease;
   }
   .modal-overlay.active .modal { transform: translateY(0); }
-  .modal-handle {
-    width: 40px; height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin: 0 auto 16px;
-  }
-  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
-  .modal-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
-  .modal-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+  .modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .modal-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
   .modal-input {
-    width: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    font-size: 15px;
-    font-family: var(--font);
-    outline: none;
-    color: var(--text);
-    margin-bottom: 16px;
+    width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+    padding: 11px 13px; font-size: 15px; font-family: inherit; outline: none;
+    color: var(--text); margin-bottom: 16px;
   }
   .modal-input:focus { border-color: var(--navy); }
   .modal-actions { display: flex; gap: 10px; }
   .btn-cancel {
-    flex: 1;
-    padding: 13px;
-    border-radius: 12px;
-    border: 1.5px solid var(--border);
-    background: var(--white);
-    color: var(--text-muted);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: var(--font);
+    flex: 1; padding: 12px; border-radius: 11px; border: 1.5px solid var(--border);
+    background: #fff; color: var(--muted); font-size: 14px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
   }
   .btn-save {
-    flex: 2;
-    padding: 13px;
-    border-radius: 12px;
-    border: none;
-    background: var(--navy);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: var(--font);
+    flex: 2; padding: 12px; border-radius: 11px; border: none;
+    background: var(--navy); color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
   }
-  .btn-save:active { opacity: 0.85; }
+  .btn-save:disabled { opacity: 0.6; }
 
-  /* Loading / Empty states */
-  .loading {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-  }
-  .loading-spinner {
-    width: 32px; height: 32px;
-    border: 3px solid var(--border);
-    border-top-color: var(--navy);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 12px;
-  }
+  /* States */
+  .loading { text-align: center; padding: 40px 20px; color: var(--muted); }
+  .spinner { width: 30px; height: 30px; border: 3px solid var(--border); border-top-color: var(--navy); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--text-muted);
-    font-size: 14px;
-  }
-  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .empty { text-align: center; padding: 36px 20px; color: var(--muted); font-size: 13px; }
+  .empty-icon { font-size: 32px; margin-bottom: 10px; }
 
   /* Toast */
   .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
+    position: fixed; bottom: 24px; left: 50%;
     transform: translateX(-50%) translateY(80px);
-    background: #1a1a1a;
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 500;
-    z-index: 300;
-    transition: transform 0.25s ease;
-    white-space: nowrap;
+    background: #1a1a1a; color: #fff; padding: 11px 18px;
+    border-radius: 12px; font-size: 13px; font-weight: 500;
+    z-index: 300; transition: transform 0.25s ease; white-space: nowrap;
   }
   .toast.show { transform: translateX(-50%) translateY(0); }
-
-  .pb { padding-bottom: 24px; }
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
   <div class="header-top">
     <div>
       <div class="header-title">Equipment Inspection</div>
       <div class="header-date" id="today-date"></div>
     </div>
-    <div class="header-badge" id="expired-badge">Loading...</div>
   </div>
-  <div class="search-box">
-    <input class="search-input" type="text" id="search-input" placeholder="Unit number e.g. OHS-186" />
-    <button class="search-btn" onclick="doSearch()">Search</button>
-    <button class="clear-btn" onclick="clearSearch()">✕</button>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
+    <div class="tab" onclick="switchTab('unit')">Unit Search</div>
+    <div class="tab" onclick="switchTab('package')">Package ID</div>
   </div>
 </div>
 
-<!-- KPI Cards -->
-<div class="kpi-section">
+<!-- TAB 1: Dashboard -->
+<div class="tab-content active" id="tab-dashboard">
   <div class="kpi-grid">
-    <div class="kpi-card kpi-expired">
+    <div class="kpi-card kpi-expired" onclick="filterByStatus('expired')">
       <div class="kpi-label">Expired</div>
       <div class="kpi-value" id="kpi-expired">—</div>
-      <div class="kpi-sub">equipment</div>
+      <div class="kpi-tap">tap to view ›</div>
     </div>
-    <div class="kpi-card kpi-expiring">
+    <div class="kpi-card kpi-expiring" onclick="filterByStatus('expiring')">
       <div class="kpi-label">Expiring (30d)</div>
       <div class="kpi-value" id="kpi-expiring">—</div>
-      <div class="kpi-sub">equipment</div>
+      <div class="kpi-tap">tap to view ›</div>
     </div>
-    <div class="kpi-card kpi-valid">
+    <div class="kpi-card kpi-valid" onclick="filterByStatus('valid')">
       <div class="kpi-label">Valid</div>
       <div class="kpi-value" id="kpi-valid">—</div>
-      <div class="kpi-sub">equipment</div>
+      <div class="kpi-tap">tap to view ›</div>
     </div>
-    <div class="kpi-card kpi-active">
+    <div class="kpi-card kpi-active" onclick="filterByStatus('active')">
       <div class="kpi-label">Active Units</div>
       <div class="kpi-value" id="kpi-active">—</div>
-      <div class="kpi-sub" id="kpi-active-sub">of — units</div>
+      <div class="kpi-tap" id="kpi-active-sub">of — units</div>
     </div>
+  </div>
+  <div class="results-area" id="dash-results">
+    <div class="empty"><div class="empty-icon">👆</div><p>Tap a card above to view equipment</p></div>
   </div>
 </div>
 
-<!-- Results -->
-<div id="results-area" class="pb"></div>
+<!-- TAB 2: Unit Search -->
+<div class="tab-content" id="tab-unit">
+  <div class="search-section">
+    <div class="search-box">
+      <div class="search-label">Enter Unit Number</div>
+      <div class="search-row">
+        <input class="search-input" type="text" id="unit-input" placeholder="e.g. OHS-186" />
+        <button class="search-btn" onclick="searchUnit()">Search</button>
+        <button class="clear-btn" onclick="clearUnit()">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="results-area" id="unit-results">
+    <div class="empty"><div class="empty-icon">🔍</div><p>Enter a unit number to search</p></div>
+  </div>
+</div>
+
+<!-- TAB 3: Package ID -->
+<div class="tab-content" id="tab-package">
+  <div class="search-section">
+    <div class="search-box">
+      <div class="search-label">Enter Package ID</div>
+      <div class="search-row">
+        <input class="search-input" type="text" id="pkg-input" placeholder="e.g. SA, CTU-726, YARD" />
+        <button class="search-btn" onclick="searchPackage()">Search</button>
+        <button class="clear-btn" onclick="clearPackage()">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="results-area" id="pkg-results">
+    <div class="empty"><div class="empty-icon">📦</div><p>Enter a Package ID to search</p></div>
+  </div>
+</div>
 
 <!-- Edit Modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="modal-equip-name">Equipment Name</div>
-    <div class="modal-sub" id="modal-equip-sub">Unit — Inspection Type</div>
+    <div class="modal-title" id="modal-title">Equipment</div>
+    <div class="modal-sub" id="modal-sub">Unit — Type</div>
     <div class="modal-label">New Expiry Date</div>
-    <input class="modal-input" type="date" id="modal-date-input" />
+    <input class="modal-input" type="date" id="modal-date" />
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveDate()">Save Date</button>
+      <button class="btn-save" id="save-btn" onclick="saveDate()">Save Date</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzwi8zSVoACwP5tcfoL_GOzf4fdcgBiC4MkLdrc6O0Nu6I37uzGhC5b-uzu1AnP3pLU/exec";
 
 let allData = [];
+let currentEdit = null;
 
-function fmtDate(dateVal) {
-  if (!dateVal) return '—';
-  try {
-    const d = new Date(dateVal);
-    if (!isNaN(d)) return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
-  } catch(e) {}
-  return String(dateVal);
+// ── Helpers ────────────────────────────────────────────────────────
+function fmtDate(v) {
+  if (!v) return '—';
+  try { const d = new Date(v); if (!isNaN(d)) return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); } catch(e){}
+  return String(v);
 }
-
-function toDateObj(dateVal) {
-  if (!dateVal) return null;
-  const d = new Date(dateVal);
-  return isNaN(d) ? null : d;
+function toDate(v) {
+  if (!v) return null;
+  const d = new Date(v); return isNaN(d) ? null : d;
 }
-
-function getStatus(dateVal) {
-  const d = toDateObj(dateVal);
-  if (!d) return 'unknown';
+function getStatus(v) {
+  const d = toDate(v); if (!d) return 'unknown';
   const today = new Date(); today.setHours(0,0,0,0);
   const diff = Math.floor((d - today) / 86400000);
   if (diff < 0) return 'expired';
@@ -402,224 +281,242 @@ function getStatus(dateVal) {
   if (diff <= 50) return 'watch';
   return 'valid';
 }
+function statusLabel(s) { return {expired:'Expired',expiring:'Expiring Soon',watch:'Watch',valid:'Valid',unknown:'—'}[s]||s; }
+function statusPill(s) { return `<span class="pill pill-${s}">${statusLabel(s)}</span>`; }
+function dateColor(s) { return {expired:'var(--red)',expiring:'var(--orange)',watch:'#7a5800',valid:'var(--green)'}[s]||'var(--text)'; }
 
-function statusLabel(s) {
-  return {expired:'Expired', expiring:'Expiring Soon', watch:'Watch', valid:'Valid', unknown:'—'}[s] || s;
-}
-function statusClass(s) {
-  return {expired:'status-expired', expiring:'status-expiring', watch:'status-watch', valid:'status-valid'}[s] || '';
+function headerBg(status) {
+  return {expired:'var(--red)',expiring:'var(--orange)',watch:'#b38600',valid:'var(--green)',mixed:'var(--navy)'}[status]||'var(--navy)';
 }
 
+// ── Tab switching ──────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+}
+
+// ── Load data ──────────────────────────────────────────────────────
 async function loadData() {
-  document.getElementById('results-area').innerHTML = `<div class="loading"><div class="loading-spinner"></div><p>Loading data...</p></div>`;
   try {
     const res = await fetch(API_URL);
     const rows = await res.json();
-
     allData = rows.map((row, idx) => ({
       rowIndex: idx + 7,
-      unit:      String(row['Unit Number'] || '').trim(),
-      category:  String(row['Category'] || '').trim(),
-      equipment: String(row['Equipment'] || '').trim(),
-      serial:    String(row['Serial Number'] || '').trim(),
-      inspType:  String(row['Inspection Type'] || '').trim(),
-      expiry:    row['Expiry Date'] || '',
-      pkg:       String(row['Package ID'] || '').trim(),
-      remarks:   String(row['Remarks'] || '').trim(),
-      active:    String(row['Active'] || '').trim(),
+      unit:     String(row['Unit Number']     || '').trim(),
+      category: String(row['Category']        || '').trim(),
+      equipment:String(row['Equipment']       || '').trim(),
+      serial:   String(row['Serial Number']   || '').trim(),
+      inspType: String(row['Inspection Type'] || '').trim(),
+      expiry:   row['Expiry Date'] || '',
+      pkg:      String(row['Package ID']      || '').trim(),
+      remarks:  String(row['Remarks']         || '').trim(),
+      active:   String(row['Active']          || '').trim(),
     })).filter(r => r.unit && r.unit !== 'Unit Number' && r.unit !== '');
 
     updateKPIs();
-    renderResults(allData);
-    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB', {day:'2-digit', month:'long', year:'numeric'});
+    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
   } catch(e) {
-    document.getElementById('results-area').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not load data.<br>${e.message}</p></div>`;
+    showToast('Could not load data');
   }
 }
 
+// ── KPIs ───────────────────────────────────────────────────────────
 function updateKPIs() {
-  const today = new Date(); today.setHours(0,0,0,0);
   let expired=0, expiring=0, valid=0;
-  const units = new Set();
-  const activeUnits = new Set();
-
+  const units = new Set(), activeUnits = new Set();
   allData.forEach(r => {
     const s = getStatus(r.expiry);
-    if (s === 'expired') expired++;
-    else if (s === 'expiring') expiring++;
-    else if (s === 'valid' || s === 'watch') valid++;
+    if (s==='expired') expired++;
+    else if (s==='expiring') expiring++;
+    else if (s==='valid'||s==='watch') valid++;
     units.add(r.unit);
-    if (r.active.toLowerCase() === 'yes') activeUnits.add(r.unit);
+    if (r.active.toLowerCase()==='yes') activeUnits.add(r.unit);
   });
-
-  document.getElementById('kpi-expired').textContent = expired;
+  document.getElementById('kpi-expired').textContent  = expired;
   document.getElementById('kpi-expiring').textContent = expiring;
-  document.getElementById('kpi-valid').textContent = valid;
-  document.getElementById('kpi-active').textContent = activeUnits.size;
+  document.getElementById('kpi-valid').textContent    = valid;
+  document.getElementById('kpi-active').textContent   = activeUnits.size;
   document.getElementById('kpi-active-sub').textContent = `of ${units.size} units`;
-  document.getElementById('expired-badge').textContent = `${expired} Expired`;
 }
 
-function renderResults(data) {
-  const area = document.getElementById('results-area');
-  if (!data || data.length === 0) {
-    area.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No results found.<br>Try a different unit number.</p></div>`;
-    return;
+// ── Dashboard filter by status ─────────────────────────────────────
+function filterByStatus(type) {
+  let filtered, title, color;
+  if (type === 'active') {
+    const activeUnits = new Set();
+    allData.forEach(r => { if (r.active.toLowerCase()==='yes') activeUnits.add(r.unit); });
+    filtered = allData.filter(r => activeUnits.has(r.unit));
+    title = 'Active Units Equipment';
+    color = 'var(--navy)';
+  } else {
+    const statusMap = {expired:'expired', expiring:'expiring', valid:'valid'};
+    filtered = allData.filter(r => {
+      const s = getStatus(r.expiry);
+      if (type==='valid') return s==='valid'||s==='watch';
+      return s === statusMap[type];
+    });
+    title = {expired:'Expired Equipment', expiring:'Expiring Soon (30d)', valid:'Valid Equipment'}[type];
+    color = {expired:'var(--red)', expiring:'var(--orange)', valid:'var(--green)'}[type];
   }
 
+  const count = filtered.length;
   // Group by unit
   const grouped = {};
-  data.forEach(r => {
-    if (!grouped[r.unit]) grouped[r.unit] = { category: r.category, items: [] };
+  filtered.forEach(r => {
+    if (!grouped[r.unit]) grouped[r.unit] = {category: r.category, items:[]};
     grouped[r.unit].items.push(r);
   });
 
-  let html = `<div class="section-title">${Object.keys(grouped).length} Unit(s) Found</div>`;
-
+  let html = `<div class="section-label">${title} — ${count} items</div>`;
   for (const [unit, g] of Object.entries(grouped)) {
-    // Unit overall status
-    const statuses = g.items.map(i => getStatus(i.expiry));
-    let unitStatus = 'valid';
-    if (statuses.includes('expired')) unitStatus = 'expired';
-    else if (statuses.includes('expiring')) unitStatus = 'expiring';
-    else if (statuses.includes('watch')) unitStatus = 'watch';
-
-    const badgeColors = {
-      expired: 'background:#FFEBEB;color:#C00000',
-      expiring: 'background:#FFF3EB;color:#ED7D31',
-      watch: 'background:#FFFBEB;color:#b38600',
-      valid: 'background:#EAFAF0;color:#00B050'
-    };
-
-    html += `<div class="unit-card">
-      <div class="unit-header">
-        <div>
-          <div class="unit-name">${unit}</div>
-          <div class="unit-category">${g.category}</div>
-        </div>
-        <span class="unit-status-badge" style="${badgeColors[unitStatus]}">${statusLabel(unitStatus)}</span>
-      </div>`;
-
-    g.items.forEach(item => {
-      const s = getStatus(item.expiry);
-      const dateStr = fmtDate(item.expiry);
-      const dateColor = s === 'expired' ? 'var(--red)' : s === 'expiring' ? 'var(--orange)' : s === 'watch' ? '#b38600' : 'var(--green)';
-
-      html += `<div class="equip-row" onclick="openEdit(${JSON.stringify(item).replace(/"/g,'&quot;')})">
-        <div>
-          <div class="equip-name">${item.equipment || '—'}</div>
-          <div class="equip-sub">${item.inspType}${item.serial ? ' · ' + item.serial : ''}</div>
-        </div>
-        <div class="equip-right">
-          <div class="equip-date" style="color:${dateColor}">${dateStr}</div>
-          <span class="status-pill ${statusClass(s)}">${statusLabel(s)}</span>
-        </div>
-      </div>`;
-    });
-
-    html += `</div>`;
+    html += buildUnitCard(unit, g.category, g.items, color);
   }
+  document.getElementById('dash-results').innerHTML = html;
+}
 
+// ── Unit Search ────────────────────────────────────────────────────
+function searchUnit() {
+  const q = document.getElementById('unit-input').value.trim().toLowerCase();
+  if (!q) { document.getElementById('unit-results').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>Enter a unit number</p></div>`; return; }
+  const filtered = allData.filter(r => r.unit.toLowerCase().includes(q));
+  renderGrouped(filtered, 'unit-results', 'var(--navy)');
+}
+function clearUnit() {
+  document.getElementById('unit-input').value = '';
+  document.getElementById('unit-results').innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>Enter a unit number to search</p></div>`;
+}
+document.getElementById('unit-input').addEventListener('keydown', e => { if (e.key==='Enter') searchUnit(); });
+
+// ── Package Search ─────────────────────────────────────────────────
+function searchPackage() {
+  const q = document.getElementById('pkg-input').value.trim().toLowerCase();
+  if (!q) { document.getElementById('pkg-results').innerHTML = `<div class="empty"><div class="empty-icon">📦</div><p>Enter a Package ID</p></div>`; return; }
+  const filtered = allData.filter(r => r.pkg.toLowerCase() === q || r.pkg.toLowerCase().includes(q));
+  renderGrouped(filtered, 'pkg-results', 'var(--blue)');
+}
+function clearPackage() {
+  document.getElementById('pkg-input').value = '';
+  document.getElementById('pkg-results').innerHTML = `<div class="empty"><div class="empty-icon">📦</div><p>Enter a Package ID to search</p></div>`;
+}
+document.getElementById('pkg-input').addEventListener('keydown', e => { if (e.key==='Enter') searchPackage(); });
+
+// ── Render helpers ─────────────────────────────────────────────────
+function renderGrouped(data, containerId, headerColor) {
+  const area = document.getElementById(containerId);
+  if (!data.length) {
+    area.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><p>No results found</p></div>`; return;
+  }
+  const grouped = {};
+  data.forEach(r => {
+    if (!grouped[r.unit]) grouped[r.unit] = {category: r.category, items:[]};
+    grouped[r.unit].items.push(r);
+  });
+  let html = `<div class="section-label">${Object.keys(grouped).length} unit(s) — ${data.length} items</div>`;
+  for (const [unit, g] of Object.entries(grouped)) {
+    html += buildUnitCard(unit, g.category, g.items, headerColor);
+  }
   area.innerHTML = html;
 }
 
-function doSearch() {
-  const q = document.getElementById('search-input').value.trim().toLowerCase();
-  if (!q) { renderResults(allData); return; }
-  const filtered = allData.filter(r => r.unit.toLowerCase().includes(q));
-  renderResults(filtered);
+function buildUnitCard(unit, category, items, headerColor) {
+  const statuses = items.map(i => getStatus(i.expiry));
+  let unitStatus = 'valid';
+  if (statuses.includes('expired')) unitStatus = 'expired';
+  else if (statuses.includes('expiring')) unitStatus = 'expiring';
+  else if (statuses.includes('watch')) unitStatus = 'watch';
+
+  const badgeStyle = {
+    expired: 'background:#FFEBEB;color:var(--red)',
+    expiring: 'background:#FFF3EB;color:var(--orange)',
+    watch: 'background:#FFFBEB;color:#7a5800',
+    valid: 'background:#EAFAF0;color:var(--green)'
+  }[unitStatus];
+
+  let rows = items.map(item => {
+    const s = getStatus(item.expiry);
+    const safeItem = encodeURIComponent(JSON.stringify(item));
+    return `<div class="equip-row" onclick="openEdit(decodeURIComponent('${safeItem}'))">
+      <div>
+        <div class="eq-name">${item.equipment||'—'}</div>
+        <div class="eq-sub">${item.inspType}${item.serial?' · '+item.serial:''}</div>
+      </div>
+      <div class="eq-right">
+        <div class="eq-date" style="color:${dateColor(s)}">${fmtDate(item.expiry)}</div>
+        ${statusPill(s)}
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div class="result-card">
+    <div class="result-card-header" style="background:${headerColor}">
+      <div>
+        <div class="rch-name">${unit}</div>
+        <div class="rch-sub">${category} · ${items.length} item(s)</div>
+      </div>
+      <span class="rch-badge" style="${badgeStyle}">${statusLabel(unitStatus)}</span>
+    </div>
+    ${rows}
+  </div>`;
 }
 
-function clearSearch() {
-  document.getElementById('search-input').value = '';
-  renderResults(allData);
-}
-
-document.getElementById('search-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doSearch();
-});
-
-// Edit modal
-let currentEditItem = null;
-
-function openEdit(item) {
-  currentEditItem = item;
-  document.getElementById('modal-equip-name').textContent = item.equipment || 'Equipment';
-  document.getElementById('modal-equip-sub').textContent = `${item.unit} — ${item.inspType}`;
-
-  // Set current date in input
-  const d = toDateObj(item.expiry);
+// ── Edit modal ─────────────────────────────────────────────────────
+function openEdit(itemJson) {
+  const item = JSON.parse(itemJson);
+  currentEdit = item;
+  document.getElementById('modal-title').textContent = item.equipment || 'Equipment';
+  document.getElementById('modal-sub').textContent = `${item.unit} — ${item.inspType}`;
+  const d = toDate(item.expiry);
   if (d) {
     const yyyy = d.getFullYear();
     const mm = String(d.getMonth()+1).padStart(2,'0');
     const dd = String(d.getDate()).padStart(2,'0');
-    document.getElementById('modal-date-input').value = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('modal-date').value = `${yyyy}-${mm}-${dd}`;
   }
   document.getElementById('edit-modal').classList.add('active');
 }
-
 function closeModal() {
   document.getElementById('edit-modal').classList.remove('active');
-  currentEditItem = null;
+  currentEdit = null;
 }
-
 document.getElementById('edit-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('edit-modal')) closeModal();
 });
 
 async function saveDate() {
-  const newDate = document.getElementById('modal-date-input').value;
+  const newDate = document.getElementById('modal-date').value;
   if (!newDate) { showToast('Please select a date'); return; }
-
-  const item = currentEditItem;
-  const saveBtn = document.querySelector('.btn-save');
-  saveBtn.textContent = 'Saving...';
-  saveBtn.disabled = true;
-
+  const item = currentEdit;
+  const btn = document.getElementById('save-btn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
   try {
     const params = new URLSearchParams({
-      action: 'update',
-      unit: item.unit,
-      equipment: item.equipment,
-      inspType: item.inspType,
-      newDate: newDate
+      action: 'update', unit: item.unit,
+      equipment: item.equipment, inspType: item.inspType, newDate
     });
-
     const res = await fetch(API_URL + '?' + params.toString());
     const result = await res.json();
-
     if (result.status === 'ok') {
       allData.forEach(r => {
-        if (r.unit === item.unit && r.equipment === item.equipment &&
-            r.inspType === item.inspType && r.serial === item.serial) {
-          r.expiry = newDate;
-        }
+        if (r.unit===item.unit && r.equipment===item.equipment &&
+            r.inspType===item.inspType && r.serial===item.serial) r.expiry = newDate;
       });
       updateKPIs();
-      const q = document.getElementById('search-input').value.trim().toLowerCase();
-      const filtered = q ? allData.filter(r => r.unit.toLowerCase().includes(q)) : allData;
-      renderResults(filtered);
       closeModal();
       showToast('✓ Date saved to Google Sheets!');
-    } else {
-      showToast('Error: ' + (result.msg || 'Could not save'));
-    }
-  } catch(e) {
-    showToast('Connection error — try again');
-  } finally {
-    saveBtn.textContent = 'Save Date';
-    saveBtn.disabled = false;
-  }
+    } else { showToast('Error: ' + (result.msg||'Could not save')); }
+  } catch(e) { showToast('Connection error — try again'); }
+  finally { btn.textContent = 'Save Date'; btn.disabled = false; }
 }
 
+// ── Toast ──────────────────────────────────────────────────────────
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Init
 loadData();
 </script>
 </body>
