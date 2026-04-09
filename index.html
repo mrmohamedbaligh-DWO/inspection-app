@@ -161,6 +161,45 @@
 </style>
 </head>
 <body>
+<div id="lock-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#1F3864;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;">
+  <div style="margin-bottom:32px;text-align:center;">
+    <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+    <div style="color:#fff;font-size:22px;font-weight:700;margin-bottom:6px;">Equipment Inspection</div>
+    <div style="color:#BDD7EE;font-size:13px;">Enter password to continue</div>
+  </div>
+  <div style="width:100%;max-width:300px;">
+    <input id="pwd-input" type="password" placeholder="Password"
+      style="width:100%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);border-radius:12px;padding:14px 16px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center;letter-spacing:4px;"
+      onkeydown="if(event.key==='Enter') checkPwd()" />
+    <button onclick="checkPwd()"
+      style="width:100%;background:#fff;color:#1F3864;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">
+      Enter
+    </button>
+    <div id="pwd-error" style="color:#ff8888;font-size:13px;text-align:center;margin-top:10px;display:none;">
+      Incorrect password. Try again.
+    </div>
+  </div>
+</div>
+
+<script>
+function checkPwd() {
+  const pwd = document.getElementById('pwd-input').value;
+  if (pwd === '30403040') {
+    document.getElementById('lock-screen').style.display = 'none';
+    sessionStorage.setItem('auth', '1');
+  } else {
+    document.getElementById('pwd-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+if (sessionStorage.getItem('auth') === '1') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('lock-screen').style.display = 'none';
+  });
+}
+</script>
+
 
 <div class="header">
   <div class="header-top">
