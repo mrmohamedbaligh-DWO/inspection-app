@@ -212,6 +212,8 @@ if (sessionStorage.getItem('auth') === '1') {
     <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
     <div class="tab" onclick="switchTab('unit')">Unit Search</div>
     <div class="tab" onclick="switchTab('package')">Package ID</div>
+    <div class="tab" onclick="switchTab('sling')">Sling / MPI</div>
+    <div class="tab" onclick="switchTab('add')">+ Add</div>
   </div>
 </div>
 
@@ -278,6 +280,148 @@ if (sessionStorage.getItem('auth') === '1') {
   </div>
 </div>
 
+<!-- TAB 4: Sling / MPI -->
+<div class="tab-content" id="tab-sling">
+  <div class="search-section">
+    <div class="search-box">
+      <div class="search-label">Filter by Type</div>
+      <div class="search-row">
+        <select id="sling-filter" style="flex:1;background:var(--blue-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--navy);font-weight:500;outline:none;font-family:inherit;">
+          <option value="">All</option>
+          <option value="Sling">Sling</option>
+          <option value="MPI">MPI</option>
+          <option value="Control Cabin">Control Cabin</option>
+          <option value="Power Pack">Power Pack</option>
+          <option value="Injector Head">Injector Head</option>
+          <option value="Gooseneck">Gooseneck</option>
+          <option value="Work Reel">Work Reel</option>
+        </select>
+        <button class="search-btn" onclick="filterSling()">Filter</button>
+        <button class="clear-btn" onclick="clearSling()">✕</button>
+      </div>
+    </div>
+  </div>
+  <div class="results-area" id="sling-results">
+    <div class="loading"><div class="spinner"></div><p>Loading...</p></div>
+  </div>
+</div>
+
+<!-- TAB 5: Add New Equipment -->
+<div class="tab-content" id="tab-add">
+  <div class="search-section" style="padding-bottom:12px;">
+
+    <div class="search-box" style="margin-bottom:10px;">
+      <div class="search-label">Add to which sheet?</div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button id="btn-sheet1" onclick="selectSheet('sheet1')"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
+          Equipment (Sheet1)
+        </button>
+        <button id="btn-sling" onclick="selectSheet('sling')"
+          style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">
+          Sling / MPI
+        </button>
+      </div>
+    </div>
+
+    <!-- Sheet1 Form -->
+    <div id="form-sheet1" class="search-box">
+      <div class="search-label" style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px;">New Equipment — Sheet1</div>
+      <div style="display:grid;gap:8px;">
+        <div>
+          <div class="search-label">Unit Number *</div>
+          <input class="search-input" id="f1-unit" placeholder="e.g. OHS-186" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Category *</div>
+          <input class="search-input" id="f1-category" placeholder="e.g. N2 Tank" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Equipment *</div>
+          <input class="search-input" id="f1-equipment" placeholder="e.g. Lifting Pad Eyes" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Serial Number</div>
+          <input class="search-input" id="f1-serial" placeholder="e.g. OHS 186" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Inspection Type *</div>
+          <input class="search-input" id="f1-insptype" placeholder="e.g. MPI, Calibration" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Expiry Date *</div>
+          <input type="date" id="f1-expiry" class="modal-input" style="margin-bottom:0;" />
+        </div>
+        <div>
+          <div class="search-label">Package ID</div>
+          <input class="search-input" id="f1-pkg" placeholder="e.g. SA, CTU-726" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Active</div>
+          <select id="f1-active" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <button onclick="submitSheet1()"
+          style="width:100%;background:var(--navy);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;">
+          Add to Sheet1
+        </button>
+      </div>
+    </div>
+
+    <!-- Sling/MPI Form -->
+    <div id="form-sling" class="search-box" style="display:none;">
+      <div class="search-label" style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:12px;">New Equipment — Sling / MPI</div>
+      <div style="display:grid;gap:8px;">
+        <div>
+          <div class="search-label">Equipment Type *</div>
+          <select id="f2-type" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
+            <option value="Sling">Sling</option>
+            <option value="Control Cabin">Control Cabin</option>
+            <option value="Power Pack">Power Pack</option>
+            <option value="Injector Head">Injector Head</option>
+            <option value="Gooseneck">Gooseneck</option>
+            <option value="Work Reel">Work Reel</option>
+          </select>
+        </div>
+        <div>
+          <div class="search-label">Inspection Type *</div>
+          <select id="f2-insptype" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
+            <option value="Visual Inspection">Visual Inspection</option>
+            <option value="MPI">MPI</option>
+          </select>
+        </div>
+        <div>
+          <div class="search-label">Serial Number *</div>
+          <input class="search-input" id="f2-serial" placeholder="e.g. MF-105" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Expiry Date *</div>
+          <input type="date" id="f2-expiry" class="modal-input" style="margin-bottom:0;" />
+        </div>
+        <div>
+          <div class="search-label">Capacity (Ton)</div>
+          <input class="search-input" id="f2-capacity" placeholder="e.g. 18" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">LEG</div>
+          <input class="search-input" id="f2-leg" placeholder="e.g. 4" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <div>
+          <div class="search-label">Location</div>
+          <input class="search-input" id="f2-location" placeholder="e.g. Yard" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+        </div>
+        <button onclick="submitSling()"
+          style="width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;">
+          Add to Sling / MPI
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- Edit Modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
@@ -334,9 +478,162 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
   document.getElementById(`tab-${name}`).classList.add('active');
+  if (name === 'sling' && slingsData.length === 0) loadSlingsData();
 }
 
 // ── Load data ──────────────────────────────────────────────────────
+let slingsData = [];
+
+async function loadSlingsData() {
+  try {
+    const res = await fetch(API_URL + '?sheet=Sling_MPI');
+    slingsData = await res.json();
+    renderSlings(slingsData);
+  } catch(e) {
+    document.getElementById('sling-results').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load data</p></div>';
+  }
+}
+
+function renderSlings(data) {
+  const area = document.getElementById('sling-results');
+  if (!data.length) { area.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><p>No results found</p></div>'; return; }
+
+  // Group by Equipment Type
+  const grouped = {};
+  data.forEach(r => {
+    const type = String(r['Equipment Type']||'Unknown').trim();
+    if (!grouped[type]) grouped[type] = [];
+    grouped[type].push(r);
+  });
+
+  let html = `<div class="section-label">${data.length} items</div>`;
+  for (const [type, items] of Object.entries(grouped)) {
+    const statuses = items.map(i => getStatus(i['Expiry Date']));
+    let unitStatus = 'valid';
+    if (statuses.includes('expired')) unitStatus = 'expired';
+    else if (statuses.includes('expiring')) unitStatus = 'expiring';
+    else if (statuses.includes('watch')) unitStatus = 'watch';
+
+    const badgeStyle = {expired:'background:#FFEBEB;color:var(--red)',expiring:'background:#FFF3EB;color:var(--orange)',watch:'background:#FFFBEB;color:#7a5800',valid:'background:#EAFAF0;color:var(--green)'}[unitStatus];
+
+    let rows = items.map(item => {
+      const s = getStatus(item['Expiry Date']);
+      const safeItem = encodeURIComponent(JSON.stringify({...item, _sheet:'Sling_MPI'}));
+      return `<div class="equip-row" onclick="openEditSling(decodeURIComponent('${safeItem}'))">
+        <div>
+          <div class="eq-name">${item['Serial Number']||'—'}</div>
+          <div class="eq-sub">${item['Inspection Type']||''}${item['Capacity (Ton)']?' · '+item['Capacity (Ton)']+'T':''}</div>
+        </div>
+        <div class="eq-right">
+          <div class="eq-date" style="color:${dateColor(s)}">${fmtDate(item['Expiry Date'])}</div>
+          ${statusPill(s)}
+        </div>
+      </div>`;
+    }).join('');
+
+    html += `<div class="result-card">
+      <div class="result-card-header" style="background:var(--blue)">
+        <div><div class="rch-name">${type}</div><div class="rch-sub">${items.length} item(s)</div></div>
+        <span class="rch-badge" style="${badgeStyle}">${statusLabel(unitStatus)}</span>
+      </div>${rows}</div>`;
+  }
+  area.innerHTML = html;
+}
+
+function filterSling() {
+  const q = document.getElementById('sling-filter').value;
+  const filtered = q ? slingsData.filter(r => String(r['Equipment Type']||'').trim() === q) : slingsData;
+  renderSlings(filtered);
+}
+
+function clearSling() {
+  document.getElementById('sling-filter').value = '';
+  renderSlings(slingsData);
+}
+
+function openEditSling(itemJson) {
+  const item = JSON.parse(itemJson);
+  currentEdit = item;
+  document.getElementById('modal-title').textContent = item['Equipment Type'] + ' — ' + item['Serial Number'];
+  document.getElementById('modal-sub').textContent = item['Inspection Type'] || '';
+  const d = toDate(item['Expiry Date']);
+  if (d) {
+    document.getElementById('modal-date').value = d.toISOString().split('T')[0];
+  }
+  document.getElementById('edit-modal').classList.add('active');
+}
+
+// Sheet selection in Add tab
+function selectSheet(type) {
+  if (type === 'sheet1') {
+    document.getElementById('btn-sheet1').style.cssText = 'flex:1;padding:10px;border-radius:10px;border:2px solid var(--navy);background:var(--navy);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;';
+    document.getElementById('btn-sling').style.cssText = 'flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;';
+    document.getElementById('form-sheet1').style.display = 'block';
+    document.getElementById('form-sling').style.display = 'none';
+  } else {
+    document.getElementById('btn-sling').style.cssText = 'flex:1;padding:10px;border-radius:10px;border:2px solid var(--blue);background:var(--blue);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;';
+    document.getElementById('btn-sheet1').style.cssText = 'flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;';
+    document.getElementById('form-sheet1').style.display = 'none';
+    document.getElementById('form-sling').style.display = 'block';
+  }
+}
+
+async function submitSheet1() {
+  const unit     = document.getElementById('f1-unit').value.trim();
+  const category = document.getElementById('f1-category').value.trim();
+  const equipment= document.getElementById('f1-equipment').value.trim();
+  const serial   = document.getElementById('f1-serial').value.trim();
+  const insptype = document.getElementById('f1-insptype').value.trim();
+  const expiry   = document.getElementById('f1-expiry').value;
+  const pkg      = document.getElementById('f1-pkg').value.trim();
+  const active   = document.getElementById('f1-active').value;
+
+  if (!unit||!category||!equipment||!insptype||!expiry) { showToast('Please fill required fields *'); return; }
+
+  const params = new URLSearchParams({
+    action:'addSheet1', unit, category, equipment, serial, insptype, expiry, pkg, active
+  });
+  try {
+    const res = await fetch(API_URL + '?' + params.toString());
+    const result = await res.json();
+    if (result.status === 'ok') {
+      showToast('✓ Added to Sheet1!');
+      ['f1-unit','f1-category','f1-equipment','f1-serial','f1-insptype','f1-pkg'].forEach(id => document.getElementById(id).value='');
+      document.getElementById('f1-expiry').value='';
+      await loadData();
+    } else { showToast('Error: ' + (result.msg||'Could not add')); }
+  } catch(e) { showToast('Connection error'); }
+}
+
+async function submitSling() {
+  const type     = document.getElementById('f2-type').value;
+  const insptype = document.getElementById('f2-insptype').value;
+  const serial   = document.getElementById('f2-serial').value.trim();
+  const expiry   = document.getElementById('f2-expiry').value;
+  const capacity = document.getElementById('f2-capacity').value.trim();
+  const leg      = document.getElementById('f2-leg').value.trim();
+  const location = document.getElementById('f2-location').value.trim();
+
+  if (!serial||!expiry) { showToast('Please fill required fields *'); return; }
+
+  const params = new URLSearchParams({
+    action:'addSling', equipType:type, insptype, serial, expiry, capacity, leg, location
+  });
+  try {
+    const res = await fetch(API_URL + '?' + params.toString());
+    const result = await res.json();
+    if (result.status === 'ok') {
+      showToast('✓ Added to Sling/MPI!');
+      document.getElementById('f2-serial').value='';
+      document.getElementById('f2-expiry').value='';
+      document.getElementById('f2-capacity').value='';
+      document.getElementById('f2-leg').value='';
+      document.getElementById('f2-location').value='';
+      await loadSlingsData();
+    } else { showToast('Error: ' + (result.msg||'Could not add')); }
+  } catch(e) { showToast('Connection error'); }
+}
+
 async function loadData() {
   try {
     const res = await fetch(API_URL);
@@ -530,10 +827,18 @@ async function saveDate() {
   const btn = document.getElementById('save-btn');
   btn.textContent = 'Saving...'; btn.disabled = true;
   try {
-    const params = new URLSearchParams({
-      action: 'update', unit: item.unit,
-      equipment: item.equipment, inspType: item.inspType, newDate
-    });
+    let params;
+    if (item._sheet === 'Sling_MPI') {
+      params = new URLSearchParams({
+        action: 'update', sheetName: 'Sling_MPI',
+        serial: item['Serial Number'], newDate
+      });
+    } else {
+      params = new URLSearchParams({
+        action: 'update', unit: item.unit,
+        equipment: item.equipment, inspType: item.inspType, newDate
+      });
+    }
     const res = await fetch(API_URL + '?' + params.toString());
     const result = await res.json();
     if (result.status === 'ok') {
@@ -542,6 +847,11 @@ async function saveDate() {
             r.inspType===item.inspType && r.serial===item.serial) r.expiry = newDate;
       });
       updateKPIs();
+      if (item._sheet === 'Sling_MPI') {
+        const idx = slingsData.findIndex(r => r['Serial Number'] === item['Serial Number']);
+        if (idx > -1) slingsData[idx]['Expiry Date'] = newDate;
+        renderSlings(slingsData);
+      }
       closeModal();
       showToast('✓ Date saved to Google Sheets!');
     } else { showToast('Error: ' + (result.msg||'Could not save')); }
