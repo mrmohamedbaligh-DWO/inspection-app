@@ -903,7 +903,7 @@ async function loadData(forceRefresh = false) {
       pkg:      String(row['Package ID']      || '').trim(),
       remarks:  String(row['Remarks']         || '').trim(),
       active:   String(row['Active']          || '').trim(),
-    })).filter(r => r.unit && r.unit !== 'Unit Number' && r.unit !== '');
+    })).filter(r => r.unit && r.unit !== 'Unit Number' && r.unit !== '' && r.active.toLowerCase() === 'yes');
 
     updateKPIs();
     populateSheet1Dropdowns();
