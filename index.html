@@ -745,7 +745,7 @@ function renderSlings(data) {
       return `<div class="equip-row" onclick="openEditSling(decodeURIComponent('${safeItem}'))">
         <div>
           <div class="eq-name">${item['Serial Number']||'—'}</div>
-          <div class="eq-sub">${item['Inspection Type']||''}${item['Capacity (Ton)']?' · '+item['Capacity (Ton)']+'T':''}</div>
+          <div class="eq-sub">${item['Inspection Type']||''}${item['Capacity (Ton)']?' · '+item['Capacity (Ton)']+'T':''}${item['Location']?' · 📍 '+item['Location']:''}</div>
         </div>
         <div class="eq-right">
           <div class="eq-date" style="color:${dateColor(s)}">${fmtDate(item['Expiry Date'])}</div>
@@ -981,7 +981,7 @@ function filterByStatus(type, source) {
         const safeItem = encodeURIComponent(JSON.stringify({...item, _sheet:'Sling_MPI'}));
         return `<div class="equip-row" onclick="openEditSling(decodeURIComponent('${safeItem}'))">
           <div><div class="eq-name">${item['Serial Number']||'—'}</div>
-          <div class="eq-sub">${item['Inspection Type']||''}${item['Capacity (Ton)']?' · '+item['Capacity (Ton)']+'T':''}</div></div>
+          <div class="eq-sub">${item['Inspection Type']||''}${item['Capacity (Ton)']?' · '+item['Capacity (Ton)']+'T':''}${item['Location']?' · 📍 '+item['Location']:''}</div></div>
           <div class="eq-right"><div class="eq-date" style="color:${dateColor(s)}">${fmtDate(item['Expiry Date'])}</div>${statusPill(s)}</div>
         </div>`;
       }).join('');
