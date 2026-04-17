@@ -26,7 +26,7 @@
   /* Tabs */
   .tabs { display: flex; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; } .tabs::-webkit-scrollbar { display: none; }
   .tab {
-    padding: 10px 12px; font-size: 11px; color: rgba(255,255,255,0.45);
+    padding: 10px 10px; font-size: 11px; color: rgba(255,255,255,0.45);
     cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
     flex-shrink: 0;
   }
@@ -268,11 +268,11 @@ window.addEventListener('load', function() {
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
-    <div class="tab" onclick="switchTab('unit')">Unit Search</div>
-    <div class="tab" onclick="switchTab('package')">Package ID</div>
-    <div class="tab" onclick="switchTab('sling')">Sling / MPI</div>
+    <div class="tab" onclick="switchTab('unit')">Search</div>
+    <div class="tab" onclick="switchTab('package')">Package</div>
+    <div class="tab" onclick="switchTab('sling')">Sling/MPI</div>
     <div class="tab" onclick="switchTab('add')">+ Add</div>
-    <div class="tab" id="tab-audit-btn" onclick="switchTab('audit')" style="display:none;">Audit Log</div>
+    <div class="tab" id="tab-audit-btn" onclick="switchTab('audit')" style="display:none;">Audit</div>
   </div>
 </div>
 
@@ -419,7 +419,7 @@ window.addEventListener('load', function() {
           <input type="date" id="f1-expiry" class="modal-input" style="margin-bottom:0;" />
         </div>
         <div>
-          <div class="search-label">Package ID</div>
+          <div class="search-label">Package</div>
           <input class="search-input" id="f1-pkg" placeholder="e.g. SA, CTU-726" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
         </div>
         <div>
