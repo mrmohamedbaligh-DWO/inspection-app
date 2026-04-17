@@ -280,26 +280,52 @@ window.addEventListener('load', function() {
 
 <!-- TAB 1: Dashboard -->
 <div class="tab-content active" id="tab-dashboard">
+  <!-- Equipment Sheet KPIs -->
+  <div style="padding:12px 12px 4px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Equipment Sheet</div>
   <div class="kpi-grid">
-    <div class="kpi-card kpi-expired" onclick="filterByStatus('expired')">
+    <div class="kpi-card kpi-expired" onclick="filterByStatus('expired','sheet1')">
       <div class="kpi-label">Expired</div>
       <div class="kpi-value" id="kpi-expired">—</div>
       <div class="kpi-tap">tap to view ›</div>
     </div>
-    <div class="kpi-card kpi-expiring" onclick="filterByStatus('expiring')">
+    <div class="kpi-card kpi-expiring" onclick="filterByStatus('expiring','sheet1')">
       <div class="kpi-label">Expiring (30d)</div>
       <div class="kpi-value" id="kpi-expiring">—</div>
       <div class="kpi-tap">tap to view ›</div>
     </div>
-    <div class="kpi-card kpi-valid" onclick="filterByStatus('valid')">
+    <div class="kpi-card kpi-valid" onclick="filterByStatus('valid','sheet1')">
       <div class="kpi-label">Valid</div>
       <div class="kpi-value" id="kpi-valid">—</div>
       <div class="kpi-tap">tap to view ›</div>
     </div>
-    <div class="kpi-card kpi-active" onclick="filterByStatus('active')">
+    <div class="kpi-card kpi-active" onclick="filterByStatus('active','sheet1')">
       <div class="kpi-label">Active Units</div>
       <div class="kpi-value" id="kpi-active">—</div>
       <div class="kpi-tap" id="kpi-active-sub">of — units</div>
+    </div>
+  </div>
+  <!-- Sling/MPI KPIs -->
+  <div style="padding:8px 12px 4px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Sling / MPI</div>
+  <div class="kpi-grid">
+    <div class="kpi-card kpi-expired" onclick="filterByStatus('expired','sling')">
+      <div class="kpi-label">Expired</div>
+      <div class="kpi-value" id="kpi-s-expired">—</div>
+      <div class="kpi-tap">tap to view ›</div>
+    </div>
+    <div class="kpi-card kpi-expiring" onclick="filterByStatus('expiring','sling')">
+      <div class="kpi-label">Expiring (30d)</div>
+      <div class="kpi-value" id="kpi-s-expiring">—</div>
+      <div class="kpi-tap">tap to view ›</div>
+    </div>
+    <div class="kpi-card kpi-valid" onclick="filterByStatus('valid','sling')">
+      <div class="kpi-label">Valid</div>
+      <div class="kpi-value" id="kpi-s-valid">—</div>
+      <div class="kpi-tap">tap to view ›</div>
+    </div>
+    <div class="kpi-card kpi-active" onclick="filterByStatus('active','sling')">
+      <div class="kpi-label">Total Items</div>
+      <div class="kpi-value" id="kpi-s-total">—</div>
+      <div class="kpi-tap">tap to view ›</div>
     </div>
   </div>
   <div class="results-area" id="dash-results">
@@ -490,17 +516,19 @@ window.addEventListener('load', function() {
 <div class="tab-content" id="tab-audit">
   <div class="search-section">
     <div class="search-box">
-      <div class="search-label">Search Audit Log</div>
+      <div class="search-label">Search by Serial Number</div>
       <div class="search-row">
-        <input class="search-input" id="audit-search" placeholder="Username, action, or details..." style="flex:1;background:var(--blue-light);" />
+        <input class="search-input" id="audit-search" placeholder="e.g. NPS-5263, MF-105..." style="flex:1;background:var(--blue-light);" />
         <button class="search-btn" onclick="filterAudit()">Search</button>
         <button class="clear-btn" onclick="clearAudit()">✕</button>
       </div>
-      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
-        <button onclick="filterAuditByAction('')"    id="af-all"    style="padding:4px 10px;border-radius:8px;border:1px solid var(--navy);background:var(--navy);color:#fff;font-size:11px;cursor:pointer;font-family:inherit;">All</button>
-        <button onclick="filterAuditByAction('Edit Date')"    id="af-edit"   style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Edit Date</button>
-        <button onclick="filterAuditByAction('Add Equipment')" id="af-add1"  style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Add Equipment</button>
-        <button onclick="filterAuditByAction('Add Sling/MPI')" id="af-add2"  style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Add Sling/MPI</button>
+      <div style="margin-top:8px;">
+        <div class="search-label" style="margin-bottom:5px;">Filter by Sheet</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button onclick="filterAuditBySheet('')"         id="af-all"   style="padding:4px 10px;border-radius:8px;border:1px solid var(--navy);background:var(--navy);color:#fff;font-size:11px;cursor:pointer;font-family:inherit;">All</button>
+          <button onclick="filterAuditBySheet('Sheet1')"   id="af-s1"    style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Equipment</button>
+          <button onclick="filterAuditBySheet('Sling_MPI')" id="af-s2"   style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Sling/MPI</button>
+        </div>
       </div>
     </div>
   </div>
@@ -515,6 +543,7 @@ window.addEventListener('load', function() {
     <div class="modal-handle"></div>
     <div class="modal-title" id="modal-title">Equipment</div>
     <div class="modal-sub" id="modal-sub">Unit — Type</div>
+    <div id="modal-user" style="font-size:11px;color:var(--navy);font-weight:500;margin-bottom:12px;background:var(--blue-light);padding:5px 10px;border-radius:8px;display:none;">Editing as: <span id="modal-username"></span></div>
     <div class="modal-label">New Expiry Date</div>
     <input class="modal-input" type="date" id="modal-date" />
     <div class="modal-actions">
@@ -608,39 +637,43 @@ function renderAudit(rows) {
   document.getElementById('audit-results').innerHTML = html;
 }
 
+let auditSheetFilter = '';
+
 function filterAudit() {
   const q = document.getElementById('audit-search').value.trim().toLowerCase();
-  if (!q) { renderAudit(auditData); return; }
-  const filtered = auditData.filter(r =>
-    (r.Username||'').toLowerCase().includes(q) ||
-    (r.Action||'').toLowerCase().includes(q) ||
-    (r.Details||'').toLowerCase().includes(q) ||
-    (r.Sheet||'').toLowerCase().includes(q)
-  );
+  let filtered = auditData;
+  // Filter by sheet first
+  if (auditSheetFilter) filtered = filtered.filter(r => (r.Sheet||'') === auditSheetFilter);
+  // Then filter by serial number in Details
+  if (q) filtered = filtered.filter(r => (r.Details||'').toLowerCase().includes(q));
   renderAudit(filtered);
 }
 
 function clearAudit() {
   document.getElementById('audit-search').value = '';
-  // Reset action filter buttons
-  ['af-all','af-edit','af-add1','af-add2'].forEach(id => {
-    document.getElementById(id).style.background = id === 'af-all' ? 'var(--navy)' : '#fff';
-    document.getElementById(id).style.color = id === 'af-all' ? '#fff' : 'var(--muted)';
-    document.getElementById(id).style.borderColor = id === 'af-all' ? 'var(--navy)' : 'var(--border)';
+  auditSheetFilter = '';
+  ['af-all','af-s1','af-s2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const active = id === 'af-all';
+    el.style.background = active ? 'var(--navy)' : '#fff';
+    el.style.color = active ? '#fff' : 'var(--muted)';
+    el.style.borderColor = active ? 'var(--navy)' : 'var(--border)';
   });
   renderAudit(auditData);
 }
 
-function filterAuditByAction(action) {
-  const filtered = action ? auditData.filter(r => r.Action === action) : auditData;
-  renderAudit(filtered);
-  // Update button styles
-  const map = {'':'af-all','Edit Date':'af-edit','Add Equipment':'af-add1','Add Sling/MPI':'af-add2'};
-  ['af-all','af-edit','af-add1','af-add2'].forEach(id => {
-    const active = map[action] === id;
-    document.getElementById(id).style.background = active ? 'var(--navy)' : '#fff';
-    document.getElementById(id).style.color = active ? '#fff' : 'var(--muted)';
-    document.getElementById(id).style.borderColor = active ? 'var(--navy)' : 'var(--border)';
+function filterAuditBySheet(sheet) {
+  auditSheetFilter = sheet;
+  filterAudit();
+  const map = {'':'af-all','Sheet1':'af-s1','Sling_MPI':'af-s2'};
+  ['af-all','af-s1','af-s2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const active = map[sheet] === id;
+    el.style.background = active ? 'var(--navy)' : '#fff';
+    el.style.color = active ? '#fff' : 'var(--muted)';
+    el.style.borderColor = active ? 'var(--navy)' : 'var(--border)';
   });
 }
 
@@ -653,6 +686,7 @@ async function loadSlingsData() {
     slingsData = await res.json();
     renderSlings(slingsData);
     populateSlingsDropdowns();
+    updateSlingsKPIs();
   } catch(e) {
     document.getElementById('sling-results').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load data</p></div>';
   }
@@ -749,6 +783,8 @@ function openEditSling(itemJson) {
   currentEdit = item;
   document.getElementById('modal-title').textContent = item['Equipment Type'] + ' — ' + item['Serial Number'];
   document.getElementById('modal-sub').textContent = item['Inspection Type'] || '';
+  document.getElementById('modal-username').textContent = currentUser || 'Unknown';
+  document.getElementById('modal-user').style.display = 'block';
   const d = toDate(item['Expiry Date']);
   if (d) {
     document.getElementById('modal-date').value = d.toISOString().split('T')[0];
@@ -868,6 +904,7 @@ async function loadData(forceRefresh = false) {
 
 // ── KPIs ───────────────────────────────────────────────────────────
 function updateKPIs() {
+  // Sheet1 KPIs
   let expired=0, expiring=0, valid=0;
   const units = new Set(), activeUnits = new Set();
   allData.forEach(r => {
@@ -883,11 +920,80 @@ function updateKPIs() {
   document.getElementById('kpi-valid').textContent    = valid;
   document.getElementById('kpi-active').textContent   = activeUnits.size;
   document.getElementById('kpi-active-sub').textContent = `of ${units.size} units`;
+
+  // Sling/MPI KPIs (if data loaded)
+  if (slingsData.length > 0) updateSlingsKPIs();
+}
+
+function updateSlingsKPIs() {
+  let sExpired=0, sExpiring=0, sValid=0;
+  slingsData.forEach(r => {
+    const s = getStatus(r['Expiry Date']);
+    if (s==='expired') sExpired++;
+    else if (s==='expiring') sExpiring++;
+    else if (s==='valid'||s==='watch') sValid++;
+  });
+  document.getElementById('kpi-s-expired').textContent  = sExpired;
+  document.getElementById('kpi-s-expiring').textContent = sExpiring;
+  document.getElementById('kpi-s-valid').textContent    = sValid;
+  document.getElementById('kpi-s-total').textContent    = slingsData.length;
 }
 
 // ── Dashboard filter by status ─────────────────────────────────────
-function filterByStatus(type) {
+function filterByStatus(type, source) {
   let filtered, title, color;
+
+  if (source === 'sling') {
+    // Sling/MPI source
+    if (type === 'active') {
+      filtered = slingsData;
+      title = 'All Sling/MPI Equipment';
+    } else {
+      filtered = slingsData.filter(r => {
+        const s = getStatus(r['Expiry Date']);
+        if (type==='valid') return s==='valid'||s==='watch';
+        return s === type;
+      });
+      title = {expired:'Expired — Sling/MPI', expiring:'Expiring Soon — Sling/MPI', valid:'Valid — Sling/MPI'}[type];
+    }
+    color = 'var(--blue)';
+    // Render slings format
+    const area = document.getElementById('dash-results');
+    if (!filtered.length) {
+      area.innerHTML = `<div class="empty"><div class="empty-icon">✅</div><p>No ${type} items</p></div>`;
+      return;
+    }
+    const grouped = {};
+    filtered.forEach(r => {
+      const t = String(r['Equipment Type']||'Unknown').trim();
+      if (!grouped[t]) grouped[t] = [];
+      grouped[t].push(r);
+    });
+    let html = `<div class="section-label">${title} — ${filtered.length} items</div>`;
+    for (const [t, items] of Object.entries(grouped)) {
+      const statuses = items.map(i => getStatus(i['Expiry Date']));
+      let us = 'valid';
+      if (statuses.includes('expired')) us='expired';
+      else if (statuses.includes('expiring')) us='expiring';
+      const badgeStyle = {expired:'background:#FFEBEB;color:var(--red)',expiring:'background:#FFF3EB;color:var(--orange)',watch:'background:#FFFBEB;color:#7a5800',valid:'background:#EAFAF0;color:var(--green)'}[us];
+      let rows = items.map(item => {
+        const s = getStatus(item['Expiry Date']);
+        const safeItem = encodeURIComponent(JSON.stringify({...item, _sheet:'Sling_MPI'}));
+        return `<div class="equip-row" onclick="openEditSling(decodeURIComponent('${safeItem}'))">
+          <div><div class="eq-name">${item['Serial Number']||'—'}</div>
+          <div class="eq-sub">${item['Inspection Type']||''}${item['Capacity (Ton)']?' · '+item['Capacity (Ton)']+'T':''}</div></div>
+          <div class="eq-right"><div class="eq-date" style="color:${dateColor(s)}">${fmtDate(item['Expiry Date'])}</div>${statusPill(s)}</div>
+        </div>`;
+      }).join('');
+      html += `<div class="result-card"><div class="result-card-header" style="background:var(--blue)">
+        <div><div class="rch-name">${t}</div><div class="rch-sub">${items.length} item(s)</div></div>
+        <span class="rch-badge" style="${badgeStyle}">${statusLabel(us)}</span></div>${rows}</div>`;
+    }
+    area.innerHTML = html;
+    return;
+  }
+
+  // Sheet1 source
   if (type === 'active') {
     const activeUnits = new Set();
     allData.forEach(r => { if (r.active.toLowerCase()==='yes') activeUnits.add(r.unit); });
@@ -1017,6 +1123,8 @@ function openEdit(itemJson) {
   currentEdit = item;
   document.getElementById('modal-title').textContent = item.equipment || 'Equipment';
   document.getElementById('modal-sub').textContent = `${item.unit} — ${item.inspType}`;
+  document.getElementById('modal-username').textContent = currentUser || 'Unknown';
+  document.getElementById('modal-user').style.display = 'block';
   const d = toDate(item.expiry);
   if (d) {
     const yyyy = d.getFullYear();
@@ -1028,6 +1136,7 @@ function openEdit(itemJson) {
 }
 function closeModal() {
   document.getElementById('edit-modal').classList.remove('active');
+  document.getElementById('modal-user').style.display = 'none';
   currentEdit = null;
 }
 document.getElementById('edit-modal').addEventListener('click', e => {
@@ -1060,6 +1169,9 @@ async function saveDate() {
         if (r.unit===item.unit && r.equipment===item.equipment &&
             r.inspType===item.inspType && r.serial===item.serial) r.expiry = newDate;
       });
+      // Clear cache so next load gets fresh data with updated status
+      sessionStorage.removeItem('cachedData');
+      sessionStorage.removeItem('cacheTime');
       updateKPIs();
       if (item._sheet === 'Sling_MPI') {
         const idx = slingsData.findIndex(r => r['Serial Number'] === item['Serial Number']);
