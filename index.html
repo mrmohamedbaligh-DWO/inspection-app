@@ -288,16 +288,17 @@ if (sessionStorage.getItem('auth') === '1') {
       <div class="search-row">
         <select id="sling-filter" style="flex:1;background:var(--blue-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--navy);font-weight:500;outline:none;font-family:inherit;">
           <option value="">All</option>
-          <option value="Sling">Sling</option>
-          <option value="MPI">MPI</option>
-          <option value="Control Cabin">Control Cabin</option>
-          <option value="Power Pack">Power Pack</option>
-          <option value="Injector Head">Injector Head</option>
-          <option value="Gooseneck">Gooseneck</option>
-          <option value="Work Reel">Work Reel</option>
         </select>
         <button class="search-btn" onclick="filterSling()">Filter</button>
         <button class="clear-btn" onclick="clearSling()">✕</button>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="search-label" style="margin-bottom:5px;">Search by Serial Number</div>
+        <div class="search-row">
+          <input class="search-input" id="sling-serial" placeholder="e.g. MF-105, SA-215" style="flex:1;background:var(--blue-light);" />
+          <button class="search-btn" onclick="filterSling()">Search</button>
+          <button class="clear-btn" onclick="clearSling()">✕</button>
+        </div>
       </div>
     </div>
   </div>
@@ -334,11 +335,15 @@ if (sessionStorage.getItem('auth') === '1') {
         </div>
         <div>
           <div class="search-label">Category *</div>
-          <input class="search-input" id="f1-category" placeholder="e.g. N2 Tank" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+          <select id="f1-category" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
+            <option value="">-- Select --</option>
+          </select>
         </div>
         <div>
           <div class="search-label">Equipment *</div>
-          <input class="search-input" id="f1-equipment" placeholder="e.g. Lifting Pad Eyes" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+          <select id="f1-equipment" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
+            <option value="">-- Select --</option>
+          </select>
         </div>
         <div>
           <div class="search-label">Serial Number</div>
@@ -346,7 +351,9 @@ if (sessionStorage.getItem('auth') === '1') {
         </div>
         <div>
           <div class="search-label">Inspection Type *</div>
-          <input class="search-input" id="f1-insptype" placeholder="e.g. MPI, Calibration" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+          <select id="f1-insptype" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
+            <option value="">-- Select --</option>
+          </select>
         </div>
         <div>
           <div class="search-label">Expiry Date *</div>
@@ -377,19 +384,13 @@ if (sessionStorage.getItem('auth') === '1') {
         <div>
           <div class="search-label">Equipment Type *</div>
           <select id="f2-type" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
-            <option value="Sling">Sling</option>
-            <option value="Control Cabin">Control Cabin</option>
-            <option value="Power Pack">Power Pack</option>
-            <option value="Injector Head">Injector Head</option>
-            <option value="Gooseneck">Gooseneck</option>
-            <option value="Work Reel">Work Reel</option>
+            <option value="">-- Select --</option>
           </select>
         </div>
         <div>
           <div class="search-label">Inspection Type *</div>
           <select id="f2-insptype" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
-            <option value="Visual Inspection">Visual Inspection</option>
-            <option value="MPI">MPI</option>
+            <option value="">-- Select --</option>
           </select>
         </div>
         <div>
@@ -410,7 +411,9 @@ if (sessionStorage.getItem('auth') === '1') {
         </div>
         <div>
           <div class="search-label">Location</div>
-          <input class="search-input" id="f2-location" placeholder="e.g. Yard" style="width:100%;background:var(--gray-light);border-radius:9px;padding:9px 12px;" />
+          <select id="f2-location" style="width:100%;background:var(--gray-light);border:none;border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;outline:none;">
+            <option value="">-- Select --</option>
+          </select>
         </div>
         <button onclick="submitSling()"
           style="width:100%;background:var(--blue);color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px;">
@@ -489,9 +492,35 @@ async function loadSlingsData() {
     const res = await fetch(API_URL + '?sheet=Sling_MPI');
     slingsData = await res.json();
     renderSlings(slingsData);
+    populateSlingsDropdowns();
   } catch(e) {
     document.getElementById('sling-results').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load data</p></div>';
   }
+}
+
+function populateSlingsDropdowns() {
+  const types     = [...new Set(slingsData.map(r => String(r['Equipment Type']||'').trim()).filter(Boolean))].sort();
+  const inspTypes = [...new Set(slingsData.map(r => String(r['Inspection Type']||'').trim()).filter(Boolean))].sort();
+  const locations = [...new Set(slingsData.map(r => String(r['Location']||'').trim()).filter(Boolean))].sort();
+
+  // Filter dropdown in Sling tab
+  const filterSel = document.getElementById('sling-filter');
+  filterSel.innerHTML = '<option value="">All</option>' + types.map(t => `<option value="${t}">${t}</option>`).join('');
+
+  // Add form dropdowns
+  document.getElementById('f2-type').innerHTML    = '<option value="">-- Select --</option>' + types.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('f2-insptype').innerHTML = '<option value="">-- Select --</option>' + inspTypes.map(t => `<option value="${t}">${t}</option>`).join('');
+  document.getElementById('f2-location').innerHTML = '<option value="">-- Select --</option>' + locations.map(l => `<option value="${l}">${l}</option>`).join('');
+}
+
+function populateSheet1Dropdowns() {
+  const categories = [...new Set(allData.map(r => r.category).filter(Boolean))].sort();
+  const equipments = [...new Set(allData.map(r => r.equipment).filter(Boolean))].sort();
+  const inspTypes  = [...new Set(allData.map(r => r.inspType).filter(Boolean))].sort();
+
+  document.getElementById('f1-category').innerHTML = '<option value="">-- Select --</option>' + categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('f1-equipment').innerHTML = '<option value="">-- Select --</option>' + equipments.map(e => `<option value="${e}">${e}</option>`).join('');
+  document.getElementById('f1-insptype').innerHTML  = '<option value="">-- Select --</option>' + inspTypes.map(t => `<option value="${t}">${t}</option>`).join('');
 }
 
 function renderSlings(data) {
@@ -541,13 +570,17 @@ function renderSlings(data) {
 }
 
 function filterSling() {
-  const q = document.getElementById('sling-filter').value;
-  const filtered = q ? slingsData.filter(r => String(r['Equipment Type']||'').trim() === q) : slingsData;
+  const typeQ  = document.getElementById('sling-filter').value.trim().toLowerCase();
+  const serialQ = document.getElementById('sling-serial').value.trim().toLowerCase();
+  let filtered = slingsData;
+  if (typeQ)   filtered = filtered.filter(r => String(r['Equipment Type']||'').trim().toLowerCase() === typeQ);
+  if (serialQ) filtered = filtered.filter(r => String(r['Serial Number']||'').trim().toLowerCase().includes(serialQ));
   renderSlings(filtered);
 }
 
 function clearSling() {
   document.getElementById('sling-filter').value = '';
+  document.getElementById('sling-serial').value = '';
   renderSlings(slingsData);
 }
 
@@ -652,6 +685,7 @@ async function loadData() {
     })).filter(r => r.unit && r.unit !== 'Unit Number' && r.unit !== '');
 
     updateKPIs();
+    populateSheet1Dropdowns();
     document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
   } catch(e) {
     showToast('Could not load data');
@@ -737,6 +771,10 @@ function clearPackage() {
   document.getElementById('pkg-results').innerHTML = `<div class="empty"><div class="empty-icon">📦</div><p>Enter a Package ID to search</p></div>`;
 }
 document.getElementById('pkg-input').addEventListener('keydown', e => { if (e.key==='Enter') searchPackage(); });
+document.addEventListener('DOMContentLoaded', () => {
+  const si = document.getElementById('sling-serial');
+  if (si) si.addEventListener('keydown', e => { if (e.key==='Enter') filterSling(); });
+});
 
 // ── Render helpers ─────────────────────────────────────────────────
 function renderGrouped(data, containerId, headerColor) {
