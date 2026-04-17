@@ -546,9 +546,17 @@ window.addEventListener('load', function() {
     <div id="modal-user" style="font-size:11px;color:var(--navy);font-weight:500;margin-bottom:12px;background:var(--blue-light);padding:5px 10px;border-radius:8px;display:none;">Editing as: <span id="modal-username"></span></div>
     <div class="modal-label">New Expiry Date</div>
     <input class="modal-input" type="date" id="modal-date" />
+    <div id="modal-pkg-box" style="display:none;margin-bottom:12px;">
+      <div class="modal-label">Package ID</div>
+      <input class="modal-input" type="text" id="modal-pkg" placeholder="e.g. SA, CTU-726" style="margin-bottom:0;" />
+    </div>
+    <div id="modal-loc-box" style="display:none;margin-bottom:12px;">
+      <div class="modal-label">Location</div>
+      <input class="modal-input" type="text" id="modal-loc" placeholder="e.g. Yard, Field" style="margin-bottom:0;" />
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" id="save-btn" onclick="saveDate()">Save Date</button>
+      <button class="btn-save" id="save-btn" onclick="saveDate()">Save</button>
     </div>
   </div>
 </div>
@@ -785,6 +793,9 @@ function openEditSling(itemJson) {
   document.getElementById('modal-sub').textContent = item['Inspection Type'] || '';
   document.getElementById('modal-username').textContent = currentUser || 'Unknown';
   document.getElementById('modal-user').style.display = 'block';
+  document.getElementById('modal-pkg-box').style.display = 'none';
+  document.getElementById('modal-loc-box').style.display = 'block';
+  document.getElementById('modal-loc').value = item['Location'] || '';
   const d = toDate(item['Expiry Date']);
   if (d) {
     document.getElementById('modal-date').value = d.toISOString().split('T')[0];
@@ -1125,6 +1136,9 @@ function openEdit(itemJson) {
   document.getElementById('modal-sub').textContent = `${item.unit} — ${item.inspType}`;
   document.getElementById('modal-username').textContent = currentUser || 'Unknown';
   document.getElementById('modal-user').style.display = 'block';
+  document.getElementById('modal-pkg-box').style.display = 'block';
+  document.getElementById('modal-loc-box').style.display = 'none';
+  document.getElementById('modal-pkg').value = item.pkg || '';
   const d = toDate(item.expiry);
   if (d) {
     const yyyy = d.getFullYear();
@@ -1137,6 +1151,8 @@ function openEdit(itemJson) {
 function closeModal() {
   document.getElementById('edit-modal').classList.remove('active');
   document.getElementById('modal-user').style.display = 'none';
+  document.getElementById('modal-pkg-box').style.display = 'none';
+  document.getElementById('modal-loc-box').style.display = 'none';
   currentEdit = null;
 }
 document.getElementById('edit-modal').addEventListener('click', e => {
@@ -1150,16 +1166,18 @@ async function saveDate() {
   const btn = document.getElementById('save-btn');
   btn.textContent = 'Saving...'; btn.disabled = true;
   try {
+    const newPkg = document.getElementById('modal-pkg').value.trim();
+    const newLoc = document.getElementById('modal-loc').value.trim();
     let params;
     if (item._sheet === 'Sling_MPI') {
       params = new URLSearchParams({
         action: 'update', sheetName: 'Sling_MPI',
-        serial: item['Serial Number'], newDate, username: currentUser||'Unknown'
+        serial: item['Serial Number'], newDate, newLocation: newLoc, username: currentUser||'Unknown'
       });
     } else {
       params = new URLSearchParams({
         action: 'update', unit: item.unit,
-        equipment: item.equipment, inspType: item.inspType, newDate, username: currentUser||'Unknown'
+        equipment: item.equipment, inspType: item.inspType, newDate, newPkg, username: currentUser||'Unknown'
       });
     }
     const res = await fetch(API_URL + '?' + params.toString());
@@ -1167,19 +1185,24 @@ async function saveDate() {
     if (result.status === 'ok') {
       allData.forEach(r => {
         if (r.unit===item.unit && r.equipment===item.equipment &&
-            r.inspType===item.inspType && r.serial===item.serial) r.expiry = newDate;
+            r.inspType===item.inspType && r.serial===item.serial) {
+          r.expiry = newDate;
+          if (newPkg) r.pkg = newPkg;
+        }
       });
-      // Clear cache so next load gets fresh data with updated status
       sessionStorage.removeItem('cachedData');
       sessionStorage.removeItem('cacheTime');
       updateKPIs();
       if (item._sheet === 'Sling_MPI') {
         const idx = slingsData.findIndex(r => r['Serial Number'] === item['Serial Number']);
-        if (idx > -1) slingsData[idx]['Expiry Date'] = newDate;
+        if (idx > -1) {
+          slingsData[idx]['Expiry Date'] = newDate;
+          if (newLoc) slingsData[idx]['Location'] = newLoc;
+        }
         renderSlings(slingsData);
       }
       closeModal();
-      showToast('✓ Date saved to Google Sheets!');
+      showToast('✓ Saved to Google Sheets!');
     } else { showToast('Error: ' + (result.msg||'Could not save')); }
   } catch(e) { showToast('Connection error — try again'); }
   finally { btn.textContent = 'Save Date'; btn.disabled = false; }
