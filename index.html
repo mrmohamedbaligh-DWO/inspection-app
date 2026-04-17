@@ -226,6 +226,8 @@ function onLoginSuccess() {
   if (currentRole === 'Admin') {
     document.getElementById('tab-audit-btn').style.display = 'block';
   }
+  // Show loading in dashboard while data loads
+  document.getElementById('dash-results').innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading data...</p></div>';
   loadData();
 }
 
@@ -791,7 +793,7 @@ async function submitSheet1() {
       showToast('✓ Added to Sheet1!');
       ['f1-unit','f1-category','f1-equipment','f1-serial','f1-insptype','f1-pkg'].forEach(id => document.getElementById(id).value='');
       document.getElementById('f1-expiry').value='';
-      await loadData();
+      await loadData(true); // force refresh
     } else { showToast('Error: ' + (result.msg||'Could not add')); }
   } catch(e) { showToast('Connection error'); }
 }
@@ -820,15 +822,29 @@ async function submitSling() {
       document.getElementById('f2-capacity').value='';
       document.getElementById('f2-leg').value='';
       document.getElementById('f2-location').value='';
+      slingsData = []; // clear cache
       await loadSlingsData();
     } else { showToast('Error: ' + (result.msg||'Could not add')); }
   } catch(e) { showToast('Connection error'); }
 }
 
-async function loadData() {
+async function loadData(forceRefresh = false) {
   try {
-    const res = await fetch(API_URL);
-    const rows = await res.json();
+    // Use cache if available and not forcing refresh
+    const cached = sessionStorage.getItem('cachedData');
+    const cacheTime = sessionStorage.getItem('cacheTime');
+    const now = Date.now();
+    
+    let rows;
+    if (!forceRefresh && cached && cacheTime && (now - parseInt(cacheTime)) < 300000) {
+      // Use cache (5 min)
+      rows = JSON.parse(cached);
+    } else {
+      const res = await fetch(API_URL + '?t=' + now); // prevent browser cache
+      rows = await res.json();
+      sessionStorage.setItem('cachedData', JSON.stringify(rows));
+      sessionStorage.setItem('cacheTime', now.toString());
+    }
     allData = rows.map((row, idx) => ({
       rowIndex: idx + 7,
       unit:     String(row['Unit Number']     || '').trim(),
