@@ -24,10 +24,11 @@
   .header-date { color: #BDD7EE; font-size: 11px; margin-top: 2px; }
 
   /* Tabs */
-  .tabs { display: flex; }
+  .tabs { display: flex; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; } .tabs::-webkit-scrollbar { display: none; }
   .tab {
-    padding: 10px 14px; font-size: 12px; color: rgba(255,255,255,0.45);
+    padding: 10px 12px; font-size: 11px; color: rgba(255,255,255,0.45);
     cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
+    flex-shrink: 0;
   }
   .tab.active { color: #fff; font-weight: 600; border-bottom-color: #fff; }
 
@@ -485,6 +486,22 @@ window.addEventListener('load', function() {
 
 <!-- TAB 6: Audit Log (Admin only) -->
 <div class="tab-content" id="tab-audit">
+  <div class="search-section">
+    <div class="search-box">
+      <div class="search-label">Search Audit Log</div>
+      <div class="search-row">
+        <input class="search-input" id="audit-search" placeholder="Username, action, or details..." style="flex:1;background:var(--blue-light);" />
+        <button class="search-btn" onclick="filterAudit()">Search</button>
+        <button class="clear-btn" onclick="clearAudit()">✕</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <button onclick="filterAuditByAction('')"    id="af-all"    style="padding:4px 10px;border-radius:8px;border:1px solid var(--navy);background:var(--navy);color:#fff;font-size:11px;cursor:pointer;font-family:inherit;">All</button>
+        <button onclick="filterAuditByAction('Edit Date')"    id="af-edit"   style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Edit Date</button>
+        <button onclick="filterAuditByAction('Add Equipment')" id="af-add1"  style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Add Equipment</button>
+        <button onclick="filterAuditByAction('Add Sling/MPI')" id="af-add2"  style="padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;font-family:inherit;">Add Sling/MPI</button>
+      </div>
+    </div>
+  </div>
   <div class="results-area" id="audit-results">
     <div class="empty"><div class="empty-icon">📋</div><p>Loading audit log...</p></div>
   </div>
@@ -550,38 +567,79 @@ function switchTab(name) {
   if (name === 'audit') loadAuditLog();
 }
 
+let auditData = [];
+
 async function loadAuditLog() {
   document.getElementById('audit-results').innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
   try {
     const res = await fetch(API_URL + '?action=getAudit');
-    const rows = await res.json();
-    if (!rows.length) {
-      document.getElementById('audit-results').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>No activity yet</p></div>';
-      return;
-    }
-    let html = `<div class="section-label">${rows.length} records</div>`;
-    html += '<div class="result-card">';
-    rows.forEach(r => {
-      const actionColor = r.Action === 'Edit Date' ? 'var(--orange)' : r.Action === 'Add Equipment' || r.Action === 'Add Sling/MPI' ? 'var(--green)' : 'var(--navy)';
-      html += `<div style="padding:10px 14px;border-bottom:1px solid var(--border);">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
-          <div style="flex:1;">
-            <div style="font-size:12px;font-weight:600;color:${actionColor};margin-bottom:3px;">${r.Action||'—'}</div>
-            <div style="font-size:11px;color:var(--text);margin-bottom:2px;">${r.Details||'—'}</div>
-            <div style="font-size:10px;color:var(--muted);">Sheet: ${r.Sheet||'—'}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:11px;font-weight:600;color:var(--navy);">${r.Username||'—'}</div>
-            <div style="font-size:10px;color:var(--muted);">${r.Timestamp||'—'}</div>
-          </div>
-        </div>
-      </div>`;
-    });
-    html += '</div>';
-    document.getElementById('audit-results').innerHTML = html;
+    auditData = await res.json();
+    renderAudit(auditData);
   } catch(e) {
     document.getElementById('audit-results').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load audit log</p></div>';
   }
+}
+
+function renderAudit(rows) {
+  if (!rows.length) {
+    document.getElementById('audit-results').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>No activity found</p></div>';
+    return;
+  }
+  let html = `<div class="section-label">${rows.length} records</div><div class="result-card">`;
+  rows.forEach(r => {
+    const actionColor = r.Action === 'Edit Date' ? 'var(--orange)' : (r.Action||'').includes('Add') ? 'var(--green)' : 'var(--navy)';
+    html += `<div style="padding:10px 14px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:600;color:${actionColor};margin-bottom:3px;">${r.Action||'—'}</div>
+          <div style="font-size:11px;color:var(--text);margin-bottom:2px;">${r.Details||'—'}</div>
+          <div style="font-size:10px;color:var(--muted);">Sheet: ${r.Sheet||'—'}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:11px;font-weight:600;color:var(--navy);">${r.Username||'—'}</div>
+          <div style="font-size:10px;color:var(--muted);">${r.Timestamp||'—'}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('audit-results').innerHTML = html;
+}
+
+function filterAudit() {
+  const q = document.getElementById('audit-search').value.trim().toLowerCase();
+  if (!q) { renderAudit(auditData); return; }
+  const filtered = auditData.filter(r =>
+    (r.Username||'').toLowerCase().includes(q) ||
+    (r.Action||'').toLowerCase().includes(q) ||
+    (r.Details||'').toLowerCase().includes(q) ||
+    (r.Sheet||'').toLowerCase().includes(q)
+  );
+  renderAudit(filtered);
+}
+
+function clearAudit() {
+  document.getElementById('audit-search').value = '';
+  // Reset action filter buttons
+  ['af-all','af-edit','af-add1','af-add2'].forEach(id => {
+    document.getElementById(id).style.background = id === 'af-all' ? 'var(--navy)' : '#fff';
+    document.getElementById(id).style.color = id === 'af-all' ? '#fff' : 'var(--muted)';
+    document.getElementById(id).style.borderColor = id === 'af-all' ? 'var(--navy)' : 'var(--border)';
+  });
+  renderAudit(auditData);
+}
+
+function filterAuditByAction(action) {
+  const filtered = action ? auditData.filter(r => r.Action === action) : auditData;
+  renderAudit(filtered);
+  // Update button styles
+  const map = {'':'af-all','Edit Date':'af-edit','Add Equipment':'af-add1','Add Sling/MPI':'af-add2'};
+  ['af-all','af-edit','af-add1','af-add2'].forEach(id => {
+    const active = map[action] === id;
+    document.getElementById(id).style.background = active ? 'var(--navy)' : '#fff';
+    document.getElementById(id).style.color = active ? '#fff' : 'var(--muted)';
+    document.getElementById(id).style.borderColor = active ? 'var(--navy)' : 'var(--border)';
+  });
 }
 
 // ── Load data ──────────────────────────────────────────────────────
@@ -874,6 +932,8 @@ document.getElementById('pkg-input').addEventListener('keydown', e => { if (e.ke
 document.addEventListener('DOMContentLoaded', () => {
   const si = document.getElementById('sling-serial');
   if (si) si.addEventListener('keydown', e => { if (e.key==='Enter') filterSling(); });
+  const ai = document.getElementById('audit-search');
+  if (ai) ai.addEventListener('keydown', e => { if (e.key==='Enter') filterAudit(); });
 });
 
 // ── Render helpers ─────────────────────────────────────────────────
