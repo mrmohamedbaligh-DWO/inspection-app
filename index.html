@@ -161,43 +161,93 @@
 </style>
 </head>
 <body>
-<div id="lock-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#1F3864;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;">
-  <div style="margin-bottom:32px;text-align:center;">
-    <div style="font-size:48px;margin-bottom:16px;">🔒</div>
-    <div style="color:#fff;font-size:22px;font-weight:700;margin-bottom:6px;">Equipment Inspection</div>
-    <div style="color:#BDD7EE;font-size:13px;">Enter password to continue</div>
+<div id="login-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#1F3864;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:24px;">
+  <div style="margin-bottom:28px;text-align:center;">
+    <div style="font-size:44px;margin-bottom:12px;">🔒</div>
+    <div style="color:#fff;font-size:20px;font-weight:700;margin-bottom:4px;">Equipment Inspection</div>
+    <div style="color:#BDD7EE;font-size:12px;">Sign in to continue</div>
   </div>
-  <div style="width:100%;max-width:300px;">
-    <input id="pwd-input" type="password" placeholder="Password"
-      style="width:100%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.3);border-radius:12px;padding:14px 16px;color:#fff;font-size:16px;font-family:inherit;outline:none;margin-bottom:12px;text-align:center;letter-spacing:4px;"
-      onkeydown="if(event.key==='Enter') checkPwd()" />
-    <button onclick="checkPwd()"
-      style="width:100%;background:#fff;color:#1F3864;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">
-      Enter
+  <div style="width:100%;max-width:300px;display:grid;gap:10px;">
+    <input id="login-username" type="text" placeholder="Username"
+      style="width:100%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:13px 16px;color:#fff;font-size:15px;font-family:inherit;outline:none;"
+      onkeydown="if(event.key==='Enter') document.getElementById('login-password').focus()" />
+    <input id="login-password" type="password" placeholder="Password"
+      style="width:100%;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;padding:13px 16px;color:#fff;font-size:15px;font-family:inherit;outline:none;"
+      onkeydown="if(event.key==='Enter') doLogin()" />
+    <button onclick="doLogin()" id="login-btn"
+      style="width:100%;background:#fff;color:#1F3864;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;">
+      Sign In
     </button>
-    <div id="pwd-error" style="color:#ff8888;font-size:13px;text-align:center;margin-top:10px;display:none;">
-      Incorrect password. Try again.
+    <div id="login-error" style="color:#ff8888;font-size:12px;text-align:center;display:none;">
+      Incorrect username or password
     </div>
   </div>
 </div>
 
 <script>
-function checkPwd() {
-  const pwd = document.getElementById('pwd-input').value;
-  if (pwd === '30403040') {
-    document.getElementById('lock-screen').style.display = 'none';
-    sessionStorage.setItem('auth', '1');
-  } else {
-    document.getElementById('pwd-error').style.display = 'block';
-    document.getElementById('pwd-input').value = '';
-    document.getElementById('pwd-input').focus();
+let currentUser = null;
+let currentRole = null;
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  if (!username || !password) return;
+  const btn = document.getElementById('login-btn');
+  btn.textContent = 'Signing in...'; btn.disabled = true;
+  try {
+    const params = new URLSearchParams({action:'login', username, password});
+    const res = await fetch(API_URL + '?' + params.toString());
+    const result = await res.json();
+    if (result.status === 'ok') {
+      currentUser = username;
+      currentRole = result.role;
+      sessionStorage.setItem('user', username);
+      sessionStorage.setItem('role', result.role);
+      document.getElementById('login-screen').style.display = 'none';
+      onLoginSuccess();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-password').focus();
+    }
+  } catch(e) {
+    document.getElementById('login-error').textContent = 'Connection error. Try again.';
+    document.getElementById('login-error').style.display = 'block';
+  } finally { btn.textContent = 'Sign In'; btn.disabled = false; }
+}
+
+function onLoginSuccess() {
+  document.getElementById('header-user').textContent = currentUser;
+  document.getElementById('header-user-box').style.display = 'flex';
+  if (currentRole === 'Admin') {
+    document.getElementById('tab-audit-btn').style.display = 'block';
   }
+  loadData();
 }
-if (sessionStorage.getItem('auth') === '1') {
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('lock-screen').style.display = 'none';
-  });
+
+function doLogout() {
+  sessionStorage.clear();
+  currentUser = null; currentRole = null;
+  document.getElementById('header-user-box').style.display = 'none';
+  document.getElementById('tab-audit-btn').style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  setTimeout(() => document.getElementById('login-username').focus(), 100);
 }
+
+window.addEventListener('load', function() {
+  const savedUser = sessionStorage.getItem('user');
+  const savedRole = sessionStorage.getItem('role');
+  if (savedUser && savedRole) {
+    currentUser = savedUser; currentRole = savedRole;
+    onLoginSuccess();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    setTimeout(() => document.getElementById('login-username').focus(), 100);
+  }
+});
 </script>
 
 
@@ -207,6 +257,10 @@ if (sessionStorage.getItem('auth') === '1') {
       <div class="header-title">Equipment Inspection</div>
       <div class="header-date" id="today-date"></div>
     </div>
+    <div id="header-user-box" style="display:none;align-items:center;gap:8px;">
+      <span id="header-user" style="color:#BDD7EE;font-size:12px;font-weight:500;"></span>
+      <button onclick="doLogout()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;">Logout</button>
+    </div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('dashboard')">Dashboard</div>
@@ -214,6 +268,7 @@ if (sessionStorage.getItem('auth') === '1') {
     <div class="tab" onclick="switchTab('package')">Package ID</div>
     <div class="tab" onclick="switchTab('sling')">Sling / MPI</div>
     <div class="tab" onclick="switchTab('add')">+ Add</div>
+    <div class="tab" id="tab-audit-btn" onclick="switchTab('audit')" style="display:none;">Audit Log</div>
   </div>
 </div>
 
@@ -425,6 +480,13 @@ if (sessionStorage.getItem('auth') === '1') {
   </div>
 </div>
 
+<!-- TAB 6: Audit Log (Admin only) -->
+<div class="tab-content" id="tab-audit">
+  <div class="results-area" id="audit-results">
+    <div class="empty"><div class="empty-icon">📋</div><p>Loading audit log...</p></div>
+  </div>
+</div>
+
 <!-- Edit Modal -->
 <div class="modal-overlay" id="edit-modal">
   <div class="modal">
@@ -482,6 +544,41 @@ function switchTab(name) {
   document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
   document.getElementById(`tab-${name}`).classList.add('active');
   if (name === 'sling' && slingsData.length === 0) loadSlingsData();
+  if (name === 'audit') loadAuditLog();
+}
+
+async function loadAuditLog() {
+  document.getElementById('audit-results').innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
+  try {
+    const res = await fetch(API_URL + '?action=getAudit');
+    const rows = await res.json();
+    if (!rows.length) {
+      document.getElementById('audit-results').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><p>No activity yet</p></div>';
+      return;
+    }
+    let html = `<div class="section-label">${rows.length} records</div>`;
+    html += '<div class="result-card">';
+    rows.forEach(r => {
+      const actionColor = r.Action === 'Edit Date' ? 'var(--orange)' : r.Action === 'Add Equipment' || r.Action === 'Add Sling/MPI' ? 'var(--green)' : 'var(--navy)';
+      html += `<div style="padding:10px 14px;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:600;color:${actionColor};margin-bottom:3px;">${r.Action||'—'}</div>
+            <div style="font-size:11px;color:var(--text);margin-bottom:2px;">${r.Details||'—'}</div>
+            <div style="font-size:10px;color:var(--muted);">Sheet: ${r.Sheet||'—'}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:11px;font-weight:600;color:var(--navy);">${r.Username||'—'}</div>
+            <div style="font-size:10px;color:var(--muted);">${r.Timestamp||'—'}</div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+    document.getElementById('audit-results').innerHTML = html;
+  } catch(e) {
+    document.getElementById('audit-results').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><p>Could not load audit log</p></div>';
+  }
 }
 
 // ── Load data ──────────────────────────────────────────────────────
@@ -624,7 +721,7 @@ async function submitSheet1() {
   if (!unit||!category||!equipment||!insptype||!expiry) { showToast('Please fill required fields *'); return; }
 
   const params = new URLSearchParams({
-    action:'addSheet1', unit, category, equipment, serial, insptype, expiry, pkg, active
+    action:'addSheet1', unit, category, equipment, serial, insptype, expiry, pkg, active, username: currentUser||'Unknown'
   });
   try {
     const res = await fetch(API_URL + '?' + params.toString());
@@ -650,7 +747,7 @@ async function submitSling() {
   if (!serial||!expiry) { showToast('Please fill required fields *'); return; }
 
   const params = new URLSearchParams({
-    action:'addSling', equipType:type, insptype, serial, expiry, capacity, leg, location
+    action:'addSling', equipType:type, insptype, serial, expiry, capacity, leg, location, username: currentUser||'Unknown'
   });
   try {
     const res = await fetch(API_URL + '?' + params.toString());
@@ -869,12 +966,12 @@ async function saveDate() {
     if (item._sheet === 'Sling_MPI') {
       params = new URLSearchParams({
         action: 'update', sheetName: 'Sling_MPI',
-        serial: item['Serial Number'], newDate
+        serial: item['Serial Number'], newDate, username: currentUser||'Unknown'
       });
     } else {
       params = new URLSearchParams({
         action: 'update', unit: item.unit,
-        equipment: item.equipment, inspType: item.inspType, newDate
+        equipment: item.equipment, inspType: item.inspType, newDate, username: currentUser||'Unknown'
       });
     }
     const res = await fetch(API_URL + '?' + params.toString());
@@ -904,7 +1001,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-loadData();
+// loadData called after login
 </script>
 </body>
 </html>
